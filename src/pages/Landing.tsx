@@ -229,7 +229,7 @@ export default function Landing() {
                 <motion.span
                   className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
                 />
-                <span className="relative">Start Free Trial</span>
+                <span className="relative">Start for free</span>
                 <motion.span
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
