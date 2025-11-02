@@ -42,3 +42,9 @@ wrangler.toml.backup
 
 # Local development
 .dev.vars
+
+# Backend (Private)
+worker/
+functions/api/
+migrations/
+wrangler.toml
