@@ -1,0 +1,16 @@
+name = "buhumail-worker"
+main = "worker/index.ts"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "buhumail-db"
+database_id = "YOUR_DATABASE_ID"
+
+[vars]
+ENVIRONMENT = "development"
+
+# Email routing configuration
+[[email_bindings]]
+name = "EMAIL"
+destination = "buhumail-emails"
