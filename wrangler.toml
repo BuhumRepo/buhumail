@@ -5,7 +5,7 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "buhumail-db"
-database_id = "YOUR_DATABASE_ID"
+database_id = "d0e2f841-7a6f-4f3a-87e0-cfb2be09182c"
 
 [vars]
 ENVIRONMENT = "development"
