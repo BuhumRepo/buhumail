@@ -109,4 +109,4 @@ For issues and questions, please open an issue on the repository.
 
 ---
 
-Built with ❤️ using Cloudflare's edge platform
+Built with ❤️ for secure and private communication
