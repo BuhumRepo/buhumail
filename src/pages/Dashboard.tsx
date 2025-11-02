@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Globe, FileText, LogOut, Menu, X } from 'lucide-react'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Mail, Globe, FileText, Menu, X, Shield, Settings, BarChart3, Puzzle, Sparkles, ChevronDown, User } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import DomainsPanel from '../components/DomainsPanel'
 import TempEmailsPanel from '../components/TempEmailsPanel'
@@ -9,20 +9,21 @@ import Overview from '../components/Overview'
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const location = useLocation()
-  const navigate = useNavigate()
-
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
 
   const navItems = [
     { path: '/dashboard', label: 'Overview', icon: Mail },
     { path: '/dashboard/domains', label: 'Domains', icon: Globe },
     { path: '/dashboard/temp-emails', label: 'Temp Emails', icon: Mail },
     { path: '/dashboard/notes', label: 'Secure Notes', icon: FileText },
+  ]
+
+  const preferenceItems = [
+    { path: '/dashboard/ai-shield', label: 'AI Email Shield', icon: Shield },
+    { path: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+    { path: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
   ]
 
   return (
@@ -58,43 +59,98 @@ export default function Dashboard() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon
-                const isActive = location.pathname === item.path
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`
-                      flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all group
-                      ${isActive
-                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-100 font-medium'
-                      }
-                    `}
-                  >
-                    <Icon className={`w-5 h-5 ${isActive ? '' : 'group-hover:scale-110 transition-transform'}`} />
-                    <span>{item.label}</span>
-                  </Link>
-                )
-              })}
+            <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+              {/* Main Navigation */}
+              <div className="space-y-1">
+                {navItems.map((item) => {
+                  const Icon = item.icon
+                  const isActive = location.pathname === item.path
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`
+                        flex items-center space-x-3 px-4 py-3 rounded-xl transition-all group
+                        ${isActive
+                          ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
+                          : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
+                        }
+                      `}
+                    >
+                      <Icon className={`w-5 h-5 ${isActive ? '' : 'opacity-70'}`} />
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+
+              {/* Preference Section */}
+              <div>
+                <div className="px-4 mb-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preference</p>
+                </div>
+                <div className="space-y-1">
+                  {preferenceItems.map((item) => {
+                    const Icon = item.icon
+                    const isActive = location.pathname === item.path
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`
+                          flex items-center space-x-3 px-4 py-3 rounded-xl transition-all group
+                          ${isActive
+                            ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
+                            : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
+                          }
+                        `}
+                      >
+                        <Icon className={`w-5 h-5 ${isActive ? '' : 'opacity-70'}`} />
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
             </nav>
 
-            {/* User Info */}
-            <div className="p-4 border-t border-gray-200">
-              <div className="mb-4 p-3 bg-gradient-to-br from-primary-50 to-purple-50 rounded-xl">
-                <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-600">{user?.email}</p>
+            {/* Upgrade Card */}
+            <div className="px-4 pb-4">
+              <div className="relative bg-gradient-to-br from-primary-500/10 to-purple-500/10 border border-primary-200/50 rounded-2xl p-4 overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-primary-400/10 rounded-full blur-2xl" />
+                <div className="relative">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <Sparkles className="w-5 h-5 text-primary-600" />
+                    <span className="text-sm font-bold text-gray-900">Free Plan</span>
+                  </div>
+                  <div className="text-xs text-gray-600 mb-3 flex items-center space-x-2">
+                    <span className="font-semibold">30</span>
+                    <span>days trial remaining</span>
+                  </div>
+                  <button className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-primary-600 to-primary-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:from-primary-700 hover:to-primary-600 transition-all shadow-lg shadow-primary-500/30">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Upgrade</span>
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center justify-center space-x-2 w-full px-4 py-2.5 text-gray-700 hover:text-red-600 bg-gray-100 hover:bg-red-50 rounded-xl transition-all font-medium"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="text-sm">Logout</span>
-              </button>
+            </div>
+
+            {/* Profile Section */}
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-xl transition-all cursor-pointer group">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
+                    <p className="text-xs text-gray-500 truncate">Personal Account</p>
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              </div>
             </div>
           </div>
         </aside>
