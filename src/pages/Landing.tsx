@@ -261,6 +261,102 @@ export default function Landing() {
         </motion.div>
       </section>
 
+      {/* AI Email Shield Showcase - NEW */}
+      <section className="container mx-auto px-4 py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-3xl" />
+        <div className="relative z-10">
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full border border-blue-200 mb-6 shadow-sm">
+              <Shield className="w-4 h-4 text-blue-600" />
+              <span className="text-blue-700 font-bold text-sm">🤖 NEW: AI-Powered</span>
+            </div>
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              Know Every Email's Trust Score
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+              Buhumail is the <span className="font-bold text-primary-600">only email service</span> that shows you AI-powered trust scores for every email. See exactly why an email is safe or dangerous before you open it.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl p-8 shadow-xl border-2 border-green-200 hover:scale-105 transition-transform"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl">✅</span>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">95/100</div>
+                <h3 className="font-bold text-gray-900 mb-2">Safe Emails</h3>
+                <p className="text-gray-600">AI confirms no threats detected</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl p-8 shadow-xl border-2 border-yellow-200 hover:scale-105 transition-transform"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-600 mb-2">55/100</div>
+                <h3 className="font-bold text-gray-900 mb-2">Suspicious</h3>
+                <p className="text-gray-600">Be cautious with this sender</p>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              whileInView={{ y: 0, opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="bg-white rounded-2xl p-8 shadow-xl border-2 border-red-200 hover:scale-105 transition-transform"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-500 rounded-2xl flex items-center justify-center mb-4 mx-auto">
+                <span className="text-3xl">🚨</span>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-red-600 mb-2">15/100</div>
+                <h3 className="font-bold text-gray-900 mb-2">Dangerous</h3>
+                <p className="text-gray-600">Phishing attempt detected</p>
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="text-center"
+          >
+            <Link
+              to="/security-demo"
+              className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-xl hover:shadow-2xl group"
+            >
+              <Shield className="w-5 h-5" />
+              <span>See AI Email Shield in Action</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <p className="text-sm text-gray-500 mt-4">Live interactive demo • No signup required</p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
@@ -273,28 +369,29 @@ export default function Landing() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <FeatureCard
+            icon={<Shield className="w-10 h-10 text-white" />}
+            iconBg="from-blue-500 to-blue-600"
+            title="AI Email Shield"
+            description="See trust scores (0-100) for every email with AI-powered threat detection"
+            badge="NEW"
+          />
+          <FeatureCard
             icon={<Mail className="w-10 h-10 text-white" />}
             iconBg="from-primary-500 to-primary-600"
             title="Temp Mail Service"
             description="Create disposable email addresses with your own custom domain"
           />
           <FeatureCard
-            icon={<Shield className="w-10 h-10 text-white" />}
-            iconBg="from-blue-500 to-blue-600"
+            icon={<Lock className="w-10 h-10 text-white" />}
+            iconBg="from-purple-500 to-purple-600"
             title="Self-Destructive Notes"
             description="Send secure messages that disappear after being read, just like Privnote"
           />
           <FeatureCard
             icon={<Globe className="w-10 h-10 text-white" />}
-            iconBg="from-purple-500 to-purple-600"
+            iconBg="from-orange-500 to-orange-600"
             title="Custom Domains"
             description="Connect your own domains and manage them effortlessly"
-          />
-          <FeatureCard
-            icon={<Zap className="w-10 h-10 text-white" />}
-            iconBg="from-orange-500 to-orange-600"
-            title="Real-time Replies"
-            description="Recipients can reply to your secure notes instantly"
           />
         </div>
       </section>
@@ -584,7 +681,7 @@ function StatCard({ icon, value, label, gradient, delay = 0, className = '' }: {
   )
 }
 
-function FeatureCard({ icon, iconBg, title, description }: { icon: React.ReactNode; iconBg: string; title: string; description: string }) {
+function FeatureCard({ icon, iconBg, title, description, badge }: { icon: React.ReactNode; iconBg: string; title: string; description: string; badge?: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   
@@ -597,6 +694,12 @@ function FeatureCard({ icon, iconBg, title, description }: { icon: React.ReactNo
       whileHover={{ y: -10, boxShadow: '0 25px 50px rgba(0,0,0,0.15)' }}
       className="bg-white rounded-2xl border border-gray-100 p-8 group relative overflow-hidden"
     >
+      {/* NEW Badge */}
+      {badge && (
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+          {badge}
+        </div>
+      )}
       {/* Hover glow effect */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-br from-primary-400/10 to-purple-400/10 opacity-0 group-hover:opacity-100 transition-opacity"
