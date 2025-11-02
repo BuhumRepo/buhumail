@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import ViewNote from './pages/ViewNote'
+import SecurityDemo from './pages/SecurityDemo'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/security-demo" element={<SecurityDemo />} />
           <Route path="/note/:noteId" element={<ViewNote />} />
           <Route
             path="/dashboard/*"
