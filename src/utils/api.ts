@@ -1,11 +1,15 @@
-const API_BASE = import.meta.env.PROD ? '/api' : 'http://localhost:3001/api'
+// In production: uses /api (same domain - Pages Functions)
+// In development: uses production backend at buhumail.pages.dev
+const API_BASE = import.meta.env.DEV 
+  ? 'https://buhumail.pages.dev/api' 
+  : '/api'
 
 class ApiClient {
   private async request(endpoint: string, options: RequestInit = {}) {
     const token = localStorage.getItem('token')
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     }
 
     if (token) {
