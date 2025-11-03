@@ -152,8 +152,16 @@ export default function Dashboard() {
           `}
         >
           <div className="h-full flex flex-col">
+            {/* Sidebar Logo */}
+            <div className="flex items-center space-x-3 p-6 border-b border-gray-200">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">Buhumail</span>
+            </div>
+
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-6 overflow-y-auto pt-6">
+            <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
               {/* Main Navigation */}
               <div className="space-y-1">
                 {navItems.map((item) => {
@@ -231,6 +239,18 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Profile Section */}
+            <div className="p-4 border-t border-gray-200">
+              <div className="flex items-center space-x-3 px-3 py-2 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500 truncate">Personal Account</p>
+                </div>
+              </div>
+            </div>
           </div>
         </aside>
 
