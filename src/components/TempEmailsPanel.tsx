@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Mail, Copy, Trash2, CheckCircle, Clock, Inbox, Share2, Sparkles, Info } from 'lucide-react'
+import { Plus, Mail, Copy, Trash2, CheckCircle, Clock, Inbox, Share2, Sparkles, Info, Search, Grid, List, Filter } from 'lucide-react'
 import { api } from '../utils/api'
 
 interface TempEmail {
@@ -43,10 +43,20 @@ export default function TempEmailsPanel() {
   const [selectedDomainId, setSelectedDomainId] = useState('')
   const [expiresIn, setExpiresIn] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
+  const [filterDomain, setFilterDomain] = useState<string>('all')
 
   useEffect(() => {
     loadData()
   }, [])
+
+  // Filter emails based on search and domain filter
+  const filteredEmails = tempEmails.filter(email => {
+    const matchesSearch = email.email_address.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesDomain = filterDomain === 'all' || email.domain === filterDomain
+    return matchesSearch && matchesDomain
+  })
 
   const loadData = async () => {
     try {
@@ -282,6 +292,66 @@ export default function TempEmailsPanel() {
         </div>
       )}
 
+      {/* Search and Filters */}
+      {tempEmails.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search emails..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Domain Filter */}
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <select
+                value={filterDomain}
+                onChange={(e) => setFilterDomain(e.target.value)}
+                className="pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none bg-white min-w-[200px]"
+              >
+                <option value="all">All Domains</option>
+                {[...new Set(tempEmails.map(e => e.domain))].map(domain => (
+                  <option key={domain} value={domain}>@{domain}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* View Toggle */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-4 py-2 rounded-md transition-all ${
+                  viewMode === 'grid' 
+                    ? 'bg-white shadow-sm text-primary-600' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="Grid view"
+              >
+                <Grid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-4 py-2 rounded-md transition-all ${
+                  viewMode === 'list' 
+                    ? 'bg-white shadow-sm text-primary-600' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+                title="List view"
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Emails List */}
       <div>
         {tempEmails.length === 0 ? (
@@ -300,9 +370,71 @@ export default function TempEmailsPanel() {
               </button>
             )}
           </div>
+        ) : filteredEmails.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">No emails found</h3>
+            <p className="text-gray-600">Try adjusting your search or filters</p>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredEmails.map((email) => (
+              <div 
+                key={email.id} 
+                className="bg-white rounded-xl border border-gray-200 hover:border-primary-300 hover:shadow-lg transition-all duration-200 p-5"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-2.5 rounded-lg">
+                    <Mail className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                    Active
+                  </span>
+                </div>
+                <div className="mb-4">
+                  <h3 className="text-base font-bold text-gray-900 mb-1 truncate" title={email.email_address}>
+                    {email.email_address}
+                  </h3>
+                  <p className="text-xs text-gray-500 flex items-center">
+                    <Clock className="w-3 h-3 mr-1" />
+                    {new Date(email.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleViewInbox(email)}
+                    className="flex-1 btn-secondary text-sm py-2"
+                  >
+                    <Inbox className="w-4 h-4 mr-1 inline" />
+                    Inbox
+                  </button>
+                  <button
+                    onClick={() => copyToClipboard(email.email_address, email.id)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Copy"
+                  >
+                    {copiedId === email.id ? (
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-gray-400" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteEmail(email.id)}
+                    className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="space-y-3">
-            {tempEmails.map((email) => (
+            {filteredEmails.map((email) => (
               <div 
                 key={email.id} 
                 className="bg-white rounded-xl border border-gray-200 hover:border-primary-300 hover:shadow-lg transition-all duration-200 p-6"
