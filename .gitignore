@@ -45,6 +45,6 @@ wrangler.toml.backup
 
 # Backend (Private)
 worker/
-functions/api/
+# functions/api/  <- Removed - Pages Functions need to be in repo
 migrations/
 wrangler.toml
