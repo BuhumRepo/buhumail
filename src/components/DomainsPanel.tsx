@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Globe, Check, X, Trash2 } from 'lucide-react'
+import { Plus, Globe, Check, X, Trash2, Star, Sparkles } from 'lucide-react'
 import { api } from '../utils/api'
 
 interface Domain {
@@ -8,6 +8,7 @@ interface Domain {
   verified: number
   dns_records: string
   created_at: number
+  is_system_domain?: number
 }
 
 export default function DomainsPanel() {
@@ -24,7 +25,13 @@ export default function DomainsPanel() {
   const loadDomains = async () => {
     try {
       const response = await api.get('/domains')
-      setDomains(response.domains)
+      // Sort system domains first
+      const sortedDomains = (response.domains || []).sort((a: Domain, b: Domain) => {
+        if (a.is_system_domain && !b.is_system_domain) return -1
+        if (!a.is_system_domain && b.is_system_domain) return 1
+        return 0
+      })
+      setDomains(sortedDomains)
     } catch (error) {
       console.error('Failed to load domains:', error)
     } finally {
@@ -53,7 +60,11 @@ export default function DomainsPanel() {
     }
   }
 
-  const handleDeleteDomain = async (domainId: string) => {
+  const handleDeleteDomain = async (domainId: string, isSystemDomain?: number) => {
+    if (isSystemDomain) {
+      alert('System domains cannot be deleted. This is a shared test domain for all users.')
+      return
+    }
     if (!confirm('Are you sure you want to delete this domain?')) return
     try {
       await api.delete(`/domains/${domainId}`)
@@ -97,12 +108,39 @@ export default function DomainsPanel() {
           </div>
         ) : (
           domains.map((domain) => (
-            <div key={domain.id} className="card">
+            <div key={domain.id} className={`card ${
+              domain.is_system_domain 
+                ? 'border-2 border-primary-200 bg-gradient-to-br from-primary-50/50 to-purple-50/30 shadow-lg' 
+                : ''
+            }`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Globe className="w-8 h-8 text-primary-600" />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{domain.domain}</h3>
+                <div className="flex items-center space-x-4 flex-1">
+                  <div className={`p-2 rounded-lg ${
+                    domain.is_system_domain 
+                      ? 'bg-gradient-to-br from-primary-600 to-purple-600' 
+                      : 'bg-primary-100'
+                  }`}>
+                    {domain.is_system_domain ? (
+                      <Sparkles className="w-8 h-8 text-white" />
+                    ) : (
+                      <Globe className="w-8 h-8 text-primary-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <h3 className="text-lg font-semibold text-gray-900">{domain.domain}</h3>
+                      {domain.is_system_domain && (
+                        <span className="px-2 py-1 bg-gradient-to-r from-primary-600 to-purple-600 text-white text-xs font-bold rounded-full flex items-center space-x-1">
+                          <Star className="w-3 h-3" />
+                          <span>TEST DOMAIN</span>
+                        </span>
+                      )}
+                    </div>
+                    {domain.is_system_domain ? (
+                      <p className="text-sm text-gray-600 mb-2">
+                        🎉 Free test domain for all users - Start creating temp emails instantly!
+                      </p>
+                    ) : null}
                     <div className="flex items-center space-x-2 mt-1">
                       {domain.verified ? (
                         <span className="flex items-center text-sm text-green-600">
@@ -115,9 +153,11 @@ export default function DomainsPanel() {
                           Not Verified
                         </span>
                       )}
-                      <span className="text-sm text-gray-500">
-                        Added {new Date(domain.created_at).toLocaleDateString()}
-                      </span>
+                      {!domain.is_system_domain && (
+                        <span className="text-sm text-gray-500">
+                          Added {new Date(domain.created_at).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -139,8 +179,13 @@ export default function DomainsPanel() {
                     </>
                   )}
                   <button
-                    onClick={() => handleDeleteDomain(domain.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    onClick={() => handleDeleteDomain(domain.id, domain.is_system_domain)}
+                    className={`p-2 rounded-lg transition-colors ${
+                      domain.is_system_domain
+                        ? 'text-gray-300 cursor-not-allowed'
+                        : 'text-red-600 hover:bg-red-50'
+                    }`}
+                    title={domain.is_system_domain ? 'System domains cannot be deleted' : 'Delete domain'}
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>

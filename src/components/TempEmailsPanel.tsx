@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, Mail, Copy, Trash2, CheckCircle, Clock, Inbox, Share2 } from 'lucide-react'
+import { Plus, Mail, Copy, Trash2, CheckCircle, Clock, Inbox, Share2, Sparkles, Info } from 'lucide-react'
 import { api } from '../utils/api'
 
 interface TempEmail {
@@ -14,6 +14,7 @@ interface Domain {
   id: string
   domain: string
   verified: number
+  is_system_domain?: number
 }
 
 interface Message {
@@ -55,9 +56,17 @@ export default function TempEmailsPanel() {
       ])
       setTempEmails(emailsRes.tempEmails || [])
       const verifiedDomains = domainsRes.domains.filter((d: Domain) => d.verified)
-      setDomains(verifiedDomains)
-      if (verifiedDomains.length > 0) {
-        setSelectedDomainId(verifiedDomains[0].id)
+      // Sort system domains first
+      const sortedDomains = verifiedDomains.sort((a: Domain, b: Domain) => {
+        if (a.is_system_domain && !b.is_system_domain) return -1
+        if (!a.is_system_domain && b.is_system_domain) return 1
+        return 0
+      })
+      setDomains(sortedDomains)
+      if (sortedDomains.length > 0) {
+        // Default to test domain if available
+        const testDomain = sortedDomains.find((d: Domain) => d.is_system_domain)
+        setSelectedDomainId(testDomain?.id || sortedDomains[0].id)
       }
     } catch (error) {
       console.error('Failed to load data:', error)
@@ -219,6 +228,35 @@ export default function TempEmailsPanel() {
         </div>
       </div>
 
+      {/* Test Domain Info Banner */}
+      {domains.some((d: Domain) => d.is_system_domain) && (
+        <div className="bg-gradient-to-r from-primary-50 via-purple-50 to-blue-50 border-2 border-primary-200 rounded-xl p-5 shadow-md">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2 mb-2">
+                <h3 className="text-sm font-bold text-gray-900">Test Domain Available!</h3>
+                <span className="px-2 py-0.5 bg-gradient-to-r from-primary-600 to-purple-600 text-white text-xs font-bold rounded-full">FREE</span>
+              </div>
+              <p className="text-sm text-gray-700 mb-2">
+                Use <strong className="text-primary-700">buhumail.pages.dev</strong> to test the service instantly without setting up your own domain.
+              </p>
+              <div className="flex items-start space-x-2 text-xs text-gray-600 bg-white/60 rounded-lg p-3 border border-primary-100">
+                <Info className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" />
+                <p>
+                  <strong>Note:</strong> This is a shared test domain. All users can create emails here.
+                  For production use, add your own custom domain in the Domains tab.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Domain Warning */}
       {domains.length === 0 && (
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-400 rounded-lg p-6 shadow-md">
@@ -362,10 +400,16 @@ export default function TempEmailsPanel() {
                 >
                   {domains.map((domain) => (
                     <option key={domain.id} value={domain.id}>
-                      @{domain.domain}
+                      {domain.is_system_domain ? '⭐ ' : ''}@{domain.domain}{domain.is_system_domain ? ' (Test Domain)' : ''}
                     </option>
                   ))}
                 </select>
+                {domains.find((d: Domain) => d.id === selectedDomainId)?.is_system_domain && (
+                  <p className="mt-2 text-xs text-primary-600 flex items-center space-x-1">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Using shared test domain - great for testing!</span>
+                  </p>
+                )}
               </div>
 
               <div className="mb-4">
