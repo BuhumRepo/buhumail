@@ -243,7 +243,7 @@ export default function TempEmailsPanel() {
                 <span className="px-2 py-0.5 bg-gradient-to-r from-primary-600 to-purple-600 text-white text-xs font-bold rounded-full">FREE</span>
               </div>
               <p className="text-sm text-gray-700 mb-2">
-                Use <strong className="text-primary-700">buhumail.pages.dev</strong> to test the service instantly without setting up your own domain.
+                Use <strong className="text-primary-700">buhumail.xyz</strong> to test the service instantly without setting up your own domain.
               </p>
               <div className="flex items-start space-x-2 text-xs text-gray-600 bg-white/60 rounded-lg p-3 border border-primary-100">
                 <Info className="w-4 h-4 text-primary-600 mt-0.5 flex-shrink-0" />
