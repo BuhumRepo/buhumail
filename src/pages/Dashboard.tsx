@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import { Mail, Globe, FileText, Menu, X, Shield, Settings, BarChart3, Puzzle, Sparkles, ChevronDown, User, LogOut, UserCircle } from 'lucide-react'
+import { Mail, Globe, FileText, Menu, X, Settings, BarChart3, Sparkles, ChevronDown, User, LogOut, UserCircle, Bell } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import DomainsPanel from '../components/DomainsPanel'
 import TempEmailsPanel from '../components/TempEmailsPanel'
@@ -39,17 +39,12 @@ export default function Dashboard() {
   }, [sidebarOpen])
 
   const navItems = [
-    { path: '/dashboard', label: 'Overview', icon: Mail },
+    { path: '/dashboard', label: 'Dashboard', icon: Mail },
     { path: '/dashboard/domains', label: 'Domains', icon: Globe },
     { path: '/dashboard/temp-emails', label: 'Temp Emails', icon: Mail },
     { path: '/dashboard/notes', label: 'Secure Notes', icon: FileText },
-  ]
-
-  const preferenceItems = [
-    { path: '/dashboard/ai-shield', label: 'AI Email Shield', icon: Shield },
-    { path: '/dashboard/settings', label: 'Settings', icon: Settings },
     { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/dashboard/integrations', label: 'Integrations', icon: Puzzle },
+    { path: '/dashboard/settings', label: 'Settings', icon: Settings },
   ]
 
   return (
@@ -109,36 +104,6 @@ export default function Dashboard() {
                     </Link>
                   )
                 })}
-              </div>
-
-              {/* Preference Section */}
-              <div>
-                <div className="px-4 mb-3">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preference</p>
-                </div>
-                <div className="space-y-1">
-                  {preferenceItems.map((item) => {
-                    const Icon = item.icon
-                    const isActive = location.pathname === item.path
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setSidebarOpen(false)}
-                        className={`
-                          flex items-center space-x-3 px-4 py-3 rounded-xl transition-all group
-                          ${isActive
-                            ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30'
-                            : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
-                          }
-                        `}
-                      >
-                        <Icon className={`w-5 h-5 ${isActive ? '' : 'opacity-70'}`} />
-                        <span className="text-sm font-medium">{item.label}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
               </div>
             </nav>
 
@@ -222,13 +187,46 @@ export default function Dashboard() {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          <Routes>
-            <Route path="/" element={<Overview />} />
-            <Route path="/domains" element={<DomainsPanel />} />
-            <Route path="/temp-emails" element={<TempEmailsPanel />} />
-            <Route path="/notes" element={<NotesPanel />} />
-          </Routes>
+        <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Top Header Bar */}
+          <div className="bg-gradient-to-r from-gray-100 to-gray-200 px-6 lg:px-8 py-3 flex items-center justify-end space-x-4 border-b border-gray-300 shadow-sm">
+            {/* Email Icon */}
+            <button className="p-2 hover:bg-gray-300/50 rounded-lg transition-colors">
+              <Mail className="w-5 h-5 text-gray-600" />
+            </button>
+            
+            {/* Notification Bell */}
+            <button className="p-2 hover:bg-gray-300/50 rounded-lg transition-colors relative">
+              <Bell className="w-5 h-5 text-gray-600" />
+              {/* Optional notification badge */}
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            
+            {/* User Profile Section */}
+            <div className="flex items-center space-x-3 pl-3">
+              <div className="w-9 h-9 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center shadow-md">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-semibold text-gray-800 leading-tight">
+                  {user?.name || 'User'}
+                </p>
+                <p className="text-xs text-gray-600 leading-tight">
+                  {user?.email || 'user@buhumail.com'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          <div className="flex-1 p-6 lg:p-8 overflow-y-auto">
+            <Routes>
+              <Route path="/" element={<Overview />} />
+              <Route path="/domains" element={<DomainsPanel />} />
+              <Route path="/temp-emails" element={<TempEmailsPanel />} />
+              <Route path="/notes" element={<NotesPanel />} />
+            </Routes>
+          </div>
         </main>
       </div>
     </div>
