@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import { Mail, Globe, FileText, Menu, X, Shield, Settings, BarChart3, Puzzle, Sparkles, ChevronDown, User } from 'lucide-react'
+import { Mail, Globe, FileText, Menu, X, Shield, Settings, BarChart3, Puzzle, Sparkles, ChevronDown, User, LogOut, UserCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import DomainsPanel from '../components/DomainsPanel'
 import TempEmailsPanel from '../components/TempEmailsPanel'
@@ -9,8 +9,34 @@ import Overview from '../components/Overview'
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { user } = useAuth()
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const { user, logout } = useAuth()
   const location = useLocation()
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false)
+      }
+    }
+
+    if (profileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [profileDropdownOpen])
+
+  // Close dropdown when sidebar closes
+  useEffect(() => {
+    if (!sidebarOpen) {
+      setProfileDropdownOpen(false)
+    }
+  }, [sidebarOpen])
 
   const navItems = [
     { path: '/dashboard', label: 'Overview', icon: Mail },
@@ -138,8 +164,11 @@ export default function Dashboard() {
             </div>
 
             {/* Profile Section */}
-            <div className="p-4 border-t border-gray-200">
-              <div className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-xl transition-all cursor-pointer group">
+            <div ref={profileRef} className="p-4 border-t border-gray-200 relative">
+              <div 
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-xl transition-all cursor-pointer group"
+              >
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
                     <User className="w-5 h-5 text-white" />
@@ -149,8 +178,37 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 truncate">Personal Account</p>
                   </div>
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform ${
+                  profileDropdownOpen ? 'rotate-180' : ''
+                }`} />
               </div>
+
+              {/* Dropdown Menu */}
+              {profileDropdownOpen && (
+                <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false)
+                      // Navigate to profile page when implemented
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <UserCircle className="w-5 h-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">Profile</span>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setProfileDropdownOpen(false)
+                      await logout()
+                      window.location.href = '/'
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
+                  >
+                    <LogOut className="w-5 h-5 text-red-600" />
+                    <span className="text-sm font-medium text-red-600">Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </aside>
