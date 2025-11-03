@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import { Mail, Globe, FileText, Menu, X, Shield, Settings, BarChart3, Puzzle, Sparkles, ChevronDown, User, LogOut, UserCircle } from 'lucide-react'
+import { Mail, Globe, FileText, Menu, X, Shield, Settings, BarChart3, Puzzle, Sparkles, ChevronDown, User, LogOut, UserCircle, Bell, Zap } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import DomainsPanel from '../components/DomainsPanel'
 import TempEmailsPanel from '../components/TempEmailsPanel'
@@ -54,18 +54,94 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/20 flex flex-col">
-      {/* Mobile Header */}
-      <div className="lg:hidden bg-white/80 backdrop-blur-lg border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-primary-500 rounded-xl flex items-center justify-center shadow-lg">
-            <Mail className="w-5 h-5 text-white" />
+      {/* Top Header Bar */}
+      <header className="bg-white border-b border-gray-200 shadow-sm z-30">
+        <div className="flex items-center justify-between px-4 lg:px-6 py-3">
+          {/* Left: Logo & Title */}
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => setSidebarOpen(!sidebarOpen)} 
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 bg-gradient-to-br from-primary-600 to-primary-500 rounded-lg flex items-center justify-center shadow-md">
+                <Mail className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent hidden sm:block">
+                Buhumail
+              </span>
+            </div>
+            
+            <div className="hidden lg:block w-px h-6 bg-gray-300"></div>
+            
+            <h1 className="hidden lg:block text-xl font-bold text-gray-900">Dashboard</h1>
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">Buhumail</span>
+
+          {/* Right: Actions & Profile */}
+          <div className="flex items-center space-x-2">
+            {/* Upgrade Button */}
+            <button className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-lg hover:from-primary-700 hover:to-primary-600 transition-all shadow-md hover:shadow-lg">
+              <Zap className="w-4 h-4" />
+              <span className="font-semibold text-sm">Upgrade Now</span>
+            </button>
+
+            {/* Notifications */}
+            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative">
+              <Bell className="w-5 h-5 text-gray-600" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+
+            {/* User Profile Dropdown */}
+            <div ref={profileRef} className="relative">
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="flex items-center space-x-3 px-3 py-2 hover:bg-gray-100 rounded-lg transition-all"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</p>
+                  <p className="text-xs text-gray-500">{user?.email || 'user@example.com'}</p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${
+                  profileDropdownOpen ? 'rotate-180' : ''
+                }`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {profileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false)
+                      // Navigate to profile page when implemented
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <UserCircle className="w-5 h-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">Profile</span>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setProfileDropdownOpen(false)
+                      await logout()
+                      window.location.href = '/'
+                    }}
+                    className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
+                  >
+                    <LogOut className="w-5 h-5 text-red-600" />
+                    <span className="text-sm font-medium text-red-600">Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
+      </header>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
@@ -76,16 +152,8 @@ export default function Dashboard() {
           `}
         >
           <div className="h-full flex flex-col">
-            {/* Logo */}
-            <div className="hidden lg:flex items-center space-x-3 p-6 border-b border-gray-200">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-500 rounded-xl flex items-center justify-center shadow-lg">
-                <Mail className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent">Buhumail</span>
-            </div>
-
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-6 overflow-y-auto">
+            <nav className="flex-1 p-4 space-y-6 overflow-y-auto pt-6">
               {/* Main Navigation */}
               <div className="space-y-1">
                 {navItems.map((item) => {
@@ -163,53 +231,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Profile Section */}
-            <div ref={profileRef} className="p-4 border-t border-gray-200 relative">
-              <div 
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-xl transition-all cursor-pointer group"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
-                    <User className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
-                    <p className="text-xs text-gray-500 truncate">Personal Account</p>
-                  </div>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-transform ${
-                  profileDropdownOpen ? 'rotate-180' : ''
-                }`} />
-              </div>
-
-              {/* Dropdown Menu */}
-              {profileDropdownOpen && (
-                <div className="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                  <button
-                    onClick={() => {
-                      setProfileDropdownOpen(false)
-                      // Navigate to profile page when implemented
-                    }}
-                    className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
-                  >
-                    <UserCircle className="w-5 h-5 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Profile</span>
-                  </button>
-                  <button
-                    onClick={async () => {
-                      setProfileDropdownOpen(false)
-                      await logout()
-                      window.location.href = '/'
-                    }}
-                    className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
-                  >
-                    <LogOut className="w-5 h-5 text-red-600" />
-                    <span className="text-sm font-medium text-red-600">Logout</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </aside>
 
