@@ -110,3 +110,5 @@ For issues and questions, please open an issue on the repository.
 ---
 
 Built with ❤️ for secure and private communication
+
+<!-- Last updated: 2026-03-02 -->
