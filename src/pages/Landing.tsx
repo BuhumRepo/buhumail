@@ -629,7 +629,7 @@ export default function Landing() {
           </div>
           <span className="text-xl font-bold text-gray-900">Buhumail</span>
         </div>
-        <p className="font-medium mb-2">&copy; 2031 Buhumail. All rights reserved.</p>
+        <p className="font-medium mb-2">&copy; 2032 Buhumail. All rights reserved.</p>
         <p className="text-sm text-gray-500">Secure email and note sharing platform</p>
       </footer>
     </div>
