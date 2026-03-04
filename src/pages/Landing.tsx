@@ -69,7 +69,7 @@ function EmailSendingAnimation() {
           </div>
         </motion.div>
       </motion.div>
-      
+
       {/* Flying particles */}
       {[...Array(8)].map((_, i) => (
         <motion.div
@@ -98,7 +98,7 @@ export default function Landing() {
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%'])
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/30 to-blue-50/20 relative overflow-hidden">
       {/* Animated background particles */}
@@ -113,7 +113,7 @@ export default function Landing() {
           />
         ))}
       </div>
-      
+
       {/* Futuristic grid overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-5">
         <div className="absolute inset-0" style={{
@@ -183,7 +183,7 @@ export default function Landing() {
               ✨ Professional Email Management Platform
             </motion.span>
           </motion.div>
-          
+
           <motion.h1
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -203,7 +203,7 @@ export default function Landing() {
               Reimagined
             </motion.span>
           </motion.h1>
-          
+
           <motion.p
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -214,7 +214,7 @@ export default function Landing() {
             <br />
             Everything you need in one powerful platform.
           </motion.p>
-          
+
           <motion.div
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -249,7 +249,7 @@ export default function Landing() {
             </motion.div>
           </motion.div>
         </motion.div>
-        
+
         {/* Animated email sending illustration */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
@@ -565,7 +565,7 @@ export default function Landing() {
             }}
             className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl"
           />
-          
+
           <motion.h2
             initial={{ y: 30, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
@@ -595,8 +595,8 @@ export default function Landing() {
               whileTap={{ scale: 0.95 }}
               className="inline-block"
             >
-              <Link 
-                to="/register" 
+              <Link
+                to="/register"
                 className="inline-flex items-center space-x-2 bg-white text-primary-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl relative"
               >
                 <span>Get Started Free</span>
@@ -629,7 +629,7 @@ export default function Landing() {
           </div>
           <span className="text-xl font-bold text-gray-900">Buhumail</span>
         </div>
-        <p className="font-medium mb-2">&copy; 2024 Buhumail. All rights reserved.</p>
+        <p className="font-medium mb-2">&copy; 2026 Buhumail. All rights reserved.</p>
         <p className="text-sm text-gray-500">Secure email and note sharing platform</p>
       </footer>
     </div>
@@ -639,7 +639,7 @@ export default function Landing() {
 function StatCard({ icon, value, label, gradient, delay = 0, className = '' }: { icon: React.ReactNode; value: string; label: string; gradient: string; delay?: number; className?: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
-  
+
   return (
     <motion.div
       ref={ref}
@@ -684,7 +684,7 @@ function StatCard({ icon, value, label, gradient, delay = 0, className = '' }: {
 function FeatureCard({ icon, iconBg, title, description, badge }: { icon: React.ReactNode; iconBg: string; title: string; description: string; badge?: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  
+
   return (
     <motion.div
       ref={ref}
@@ -722,7 +722,7 @@ function FeatureCard({ icon, iconBg, title, description, badge }: { icon: React.
 function StepCard({ number, icon, title, description }: { number: string; icon: React.ReactNode; title: string; description: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  
+
   return (
     <motion.div
       ref={ref}
@@ -750,7 +750,7 @@ function StepCard({ number, icon, title, description }: { number: string; icon: 
       </motion.div>
       <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
       <p className="text-gray-600 leading-relaxed">{description}</p>
-      
+
       {/* Animated connector line */}
       {parseInt(number) < 3 && (
         <motion.div
@@ -767,7 +767,7 @@ function StepCard({ number, icon, title, description }: { number: string; icon: 
 function BenefitItem({ icon, text }: { icon: React.ReactNode; text: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true })
-  
+
   return (
     <motion.div
       ref={ref}
@@ -791,7 +791,7 @@ function BenefitItem({ icon, text }: { icon: React.ReactNode; text: string }) {
 function UseCaseCard({ title, description, gradient }: { title: string; description: string; gradient: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
-  
+
   return (
     <motion.div
       ref={ref}
