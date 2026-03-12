@@ -210,9 +210,9 @@ export default function Landing() {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Secure temporary emails, self-destructive notes, and custom domain support.
+            Secure disposable emails and private notes.
             <br />
-            Everything you need in one powerful platform.
+            The all-in-one platform for total privacy.
           </motion.p>
 
           <motion.div
