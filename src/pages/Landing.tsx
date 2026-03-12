@@ -190,7 +190,7 @@ export default function Landing() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-7xl font-bold text-gray-900 mb-6 leading-tight"
           >
-            Email Service
+            Next-Gen Temp Email
             <br />
             <motion.span
               animate={{
@@ -200,7 +200,7 @@ export default function Landing() {
               className="bg-gradient-to-r from-primary-600 via-purple-600 to-blue-600 bg-clip-text text-transparent"
               style={{ backgroundSize: '200% 200%' }}
             >
-              Reimagined
+              For Everyone
             </motion.span>
           </motion.h1>
 
@@ -629,7 +629,7 @@ export default function Landing() {
           </div>
           <span className="text-xl font-bold text-gray-900">Buhumail</span>
         </div>
-        <p className="font-medium mb-2">&copy; 2032 Buhumail. All rights reserved.</p>
+        <p className="font-medium mb-2">&copy; 2033 Buhumail. All rights reserved.</p>
         <p className="text-sm text-gray-500">Secure email and note sharing platform</p>
       </footer>
     </div>
