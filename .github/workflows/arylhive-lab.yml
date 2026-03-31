@@ -57,7 +57,7 @@ jobs:
           curl -X POST "${{ inputs.callback_url }}" \
                -H "Content-Type: application/json" \
                -H "Authorization: Bearer ${{ secrets.BUILD_SERVER_SECRET }}" \
-               -d '{"buildId": "'\''"${{ inputs.build_id }}"'\''", "previewId": "lproj_f4esdefqp12e", "status": "success", "r2Path": "labs/lproj_f4esdefqp12e/builds/'\''"${{ inputs.build_id }}"'\''".zip"}'
+               -d '{"buildId": "'\''"${{ inputs.build_id }}"'\''", "previewId": "lproj_do85t83p39wx", "status": "success", "r2Path": "labs/lproj_do85t83p39wx/builds/'\''"${{ inputs.build_id }}"'\''".zip"}'
 
       - name: Notify ArylHive (Failure)
         if: failure()
@@ -65,4 +65,4 @@ jobs:
           curl -X POST "${{ inputs.callback_url }}" \
                -H "Content-Type: application/json" \
                -H "Authorization: Bearer ${{ secrets.BUILD_SERVER_SECRET }}" \
-               -d '{"buildId": "'\''"${{ inputs.build_id }}"'\''", "previewId": "lproj_f4esdefqp12e", "status": "failed", "error": "GitHub Actions Build Failed"}'
+               -d '{"buildId": "'\''"${{ inputs.build_id }}"'\''", "previewId": "lproj_do85t83p39wx", "status": "failed", "error": "GitHub Actions Build Failed"}'
