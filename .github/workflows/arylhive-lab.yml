@@ -1,0 +1,68 @@
+name: ArylHive Lab Build
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        required: true
+        type: string
+      upload_url:
+        required: true
+        type: string
+      callback_url:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build and Upload Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache dependencies
+        id: deps-cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: deps-${{ hashFiles('**/package-lock.json', '**/yarn.lock', '**/pnpm-lock.yaml') }}
+
+      - name: Install Dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Package Artifact
+        run: |
+          cd dist
+          zip -q -r ../build.zip .
+
+      - name: Upload to ArylCloud B2
+        run: |
+          curl -X PUT "${{ inputs.upload_url }}" \
+               --upload-file build.zip \
+               -H "Content-Type: application/zip"
+
+      - name: Notify ArylHive (Success)
+        if: success()
+        run: |
+          curl -X POST "${{ inputs.callback_url }}" \
+               -H "Content-Type: application/json" \
+               -H "Authorization: Bearer ${{ secrets.BUILD_SERVER_SECRET }}" \
+               -d '{"buildId": "'\''"${{ inputs.build_id }}"'\''", "previewId": "lproj_f4esdefqp12e", "status": "success", "r2Path": "labs/lproj_f4esdefqp12e/builds/'\''"${{ inputs.build_id }}"'\''".zip"}'
+
+      - name: Notify ArylHive (Failure)
+        if: failure()
+        run: |
+          curl -X POST "${{ inputs.callback_url }}" \
+               -H "Content-Type: application/json" \
+               -H "Authorization: Bearer ${{ secrets.BUILD_SERVER_SECRET }}" \
+               -d '{"buildId": "'\''"${{ inputs.build_id }}"'\''", "previewId": "lproj_f4esdefqp12e", "status": "failed", "error": "GitHub Actions Build Failed"}'
