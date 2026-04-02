@@ -42,8 +42,8 @@ jobs:
 
       - name: Package Artifact
         run: |
-          if [ -d ".next" ]; then
-            cd .next
+          if [ -d "dist" ]; then
+            cd dist
           elif [ -d "dist" ]; then
             cd dist
           elif [ -d "out" ]; then
@@ -70,7 +70,7 @@ jobs:
           curl -X POST "${{ inputs.callback_url }}" \
                -H "Content-Type: application/json" \
                -H "Authorization: Bearer ${{ secrets.BUILD_SERVER_SECRET }}" \
-               -d '{"buildId": "${{ inputs.build_id }}", "previewId": "lproj_kvhwcsan3crk", "status": "success", "r2Path": "labs/lproj_kvhwcsan3crk/builds/${{ inputs.build_id }}.zip"}'
+               -d '{"buildId": "${{ inputs.build_id }}", "previewId": "lproj_c7q19kyqzxwv", "status": "success", "r2Path": "labs/lproj_c7q19kyqzxwv/builds/${{ inputs.build_id }}.zip"}'
 
       - name: Notify ArylHive (Failure)
         if: failure()
@@ -78,4 +78,4 @@ jobs:
           curl -X POST "${{ inputs.callback_url }}" \
                -H "Content-Type: application/json" \
                -H "Authorization: Bearer ${{ secrets.BUILD_SERVER_SECRET }}" \
-               -d '{"buildId": "${{ inputs.build_id }}", "previewId": "lproj_kvhwcsan3crk", "status": "failed", "error": "GitHub Actions Build Failed"}'
+               -d '{"buildId": "${{ inputs.build_id }}", "previewId": "lproj_c7q19kyqzxwv", "status": "failed", "error": "GitHub Actions Build Failed"}'
