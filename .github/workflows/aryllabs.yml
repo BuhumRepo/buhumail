@@ -15,8 +15,8 @@ on:
         type: string
 
 env:
-  ARYL_PREVIEW_ID: "o08p4oask7"
-  ARYL_ARTIFACT_PREFIX: "labs/o08p4oask7/builds"
+  ARYL_PREVIEW_ID: "8lxqhicnup"
+  ARYL_ARTIFACT_PREFIX: "labs/8lxqhicnup/builds"
   ARYL_BUILD_CMD: "npm run build"
   ARYL_OUTPUT_DIR: "dist"
 
@@ -88,7 +88,7 @@ jobs:
                  -H "Content-Type: application/zip"
           else
             echo "Push-triggered build: upload handled by callback"
-            curl -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=o08p4oask7&buildId=${{ steps.ids.outputs.build_id }}" \\
+            curl -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=8lxqhicnup&buildId=${{ steps.ids.outputs.build_id }}" \\
                  --upload-file build.zip \\
                  -H "Content-Type: application/zip" \\
                  -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}"
@@ -101,7 +101,7 @@ jobs:
           TOKEN_HASH=$(echo -n "${{ steps.ids.outputs.build_id }}${{ secrets.ARYL_BUILD_SECRET }}" | sha256sum | cut -d' ' -f1)
           curl -X POST "$CALLBACK?token=$TOKEN_HASH&deployId=${{ steps.ids.outputs.build_id }}" \\
                -H "Content-Type: application/json" \\
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "o08p4oask7", "status": "success", "r2Path": "labs/o08p4oask7/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
+               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "8lxqhicnup", "status": "success", "r2Path": "labs/8lxqhicnup/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
 
       - name: Notify ArylHive (Failure)
         if: failure()
@@ -110,4 +110,4 @@ jobs:
           TOKEN_HASH=$(echo -n "${{ steps.ids.outputs.build_id }}${{ secrets.ARYL_BUILD_SECRET }}" | sha256sum | cut -d' ' -f1)
           curl -X POST "$CALLBACK?token=$TOKEN_HASH&deployId=${{ steps.ids.outputs.build_id }}" \\
                -H "Content-Type: application/json" \\
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "o08p4oask7", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
+               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "8lxqhicnup", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
