@@ -15,8 +15,8 @@ on:
         type: string
 
 env:
-  ARYL_PREVIEW_ID: "z4klxe1px8"
-  ARYL_ARTIFACT_PREFIX: "labs/z4klxe1px8/builds"
+  ARYL_PREVIEW_ID: "prj_aw16bb4p62gb"
+  ARYL_ARTIFACT_PREFIX: "labs/prj_aw16bb4p62gb/builds"
   ARYL_BUILD_CMD: "npm run build"
   ARYL_OUTPUT_DIR: "dist"
 
@@ -53,14 +53,15 @@ jobs:
           elif [ -f "yarn.lock" ]; then
             yarn install --frozen-lockfile
           elif [ -f "package-lock.json" ]; then
-            npm ci
+            npm ci || (echo "Lockfile out of sync, falling back to npm install..." && npm install)
           elif [ -f "package.json" ]; then
             npm install
           fi
 
       - name: Build Project
         run: npm run build
-
+        env:
+          ARYL_NO_USER_ENV: "true"
       - name: Package Artifact
         run: |
           if [ -d "dist" ]; then
@@ -83,14 +84,14 @@ jobs:
         run: |
           UPLOAD_URL="${{ steps.ids.outputs.upload_url }}"
           if [ -n "$UPLOAD_URL" ]; then
-            curl -X PUT "$UPLOAD_URL" \\
-                 --upload-file build.zip \\
+            curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X PUT "$UPLOAD_URL" \
+                 --upload-file build.zip \
                  -H "Content-Type: application/zip"
           else
             echo "Push-triggered build: upload handled by callback"
-            curl -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=z4klxe1px8&buildId=${{ steps.ids.outputs.build_id }}" \\
-                 --upload-file build.zip \\
-                 -H "Content-Type: application/zip" \\
+            curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=prj_aw16bb4p62gb&buildId=${{ steps.ids.outputs.build_id }}" \
+                 --upload-file build.zip \
+                 -H "Content-Type: application/zip" \
                  -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}"
           fi
 
@@ -98,16 +99,26 @@ jobs:
         if: success()
         run: |
           CALLBACK="${{ steps.ids.outputs.callback_url }}"
-          TOKEN_HASH=$(echo -n "${{ steps.ids.outputs.build_id }}${{ secrets.ARYL_BUILD_SECRET }}" | sha256sum | cut -d' ' -f1)
-          curl -X POST "$CALLBACK?token=$TOKEN_HASH&deployId=${{ steps.ids.outputs.build_id }}" \\
-               -H "Content-Type: application/json" \\
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "z4klxe1px8", "status": "success", "r2Path": "labs/z4klxe1px8/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
+          if echo "$CALLBACK" | grep -q '?'; then
+            FULL_URL="$CALLBACK&deployId=${{ steps.ids.outputs.build_id }}"
+          else
+            FULL_URL="$CALLBACK?deployId=${{ steps.ids.outputs.build_id }}"
+          fi
+          curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X POST "$FULL_URL" \
+               -H "Content-Type: application/json" \
+               -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}" \
+               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_aw16bb4p62gb", "status": "success", "r2Path": "labs/prj_aw16bb4p62gb/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
 
       - name: Notify ArylHive (Failure)
         if: failure()
         run: |
           CALLBACK="${{ steps.ids.outputs.callback_url }}"
-          TOKEN_HASH=$(echo -n "${{ steps.ids.outputs.build_id }}${{ secrets.ARYL_BUILD_SECRET }}" | sha256sum | cut -d' ' -f1)
-          curl -X POST "$CALLBACK?token=$TOKEN_HASH&deployId=${{ steps.ids.outputs.build_id }}" \\
-               -H "Content-Type: application/json" \\
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "z4klxe1px8", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
+          if echo "$CALLBACK" | grep -q '?'; then
+            FULL_URL="$CALLBACK&deployId=${{ steps.ids.outputs.build_id }}"
+          else
+            FULL_URL="$CALLBACK?deployId=${{ steps.ids.outputs.build_id }}"
+          fi
+          curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X POST "$FULL_URL" \
+               -H "Content-Type: application/json" \
+               -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}" \
+               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_aw16bb4p62gb", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
