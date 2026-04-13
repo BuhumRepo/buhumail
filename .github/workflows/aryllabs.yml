@@ -17,8 +17,8 @@ on:
 env:
   CI: "false"
   NEXT_TELEMETRY_DISABLED: "1"
-  ARYL_PREVIEW_ID: "prj_tge62iqdx9uy"
-  ARYL_ARTIFACT_PREFIX: "labs/prj_tge62iqdx9uy/builds"
+  ARYL_PREVIEW_ID: "prj_2lms294kcfkj"
+  ARYL_ARTIFACT_PREFIX: "labs/prj_2lms294kcfkj/builds"
   ARYL_BUILD_CMD: "npm run build"
   ARYL_OUTPUT_DIR: "dist"
 
@@ -90,17 +90,27 @@ jobs:
                  --upload-file build.zip \
                  -H "Content-Type: application/zip"
           else
-            echo "Push-triggered build: upload handled by callback"
-            curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=prj_tge62iqdx9uy&buildId=${{ steps.ids.outputs.build_id }}" \
+            SECRET="${{ secrets.ARYL_BUILD_SECRET }}"
+            if [ -z "$SECRET" ]; then
+              echo "Push-triggered build: No ARYL_BUILD_SECRET configured. Skipping upload."
+              echo "To enable auto-deploy on push, add ARYL_BUILD_SECRET to your repository secrets."
+              exit 0
+            fi
+            echo "Push-triggered build: uploading via API"
+            curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=prj_2lms294kcfkj&buildId=${{ steps.ids.outputs.build_id }}" \
                  --upload-file build.zip \
                  -H "Content-Type: application/zip" \
-                 -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}"
+                 -H "Authorization: Bearer $SECRET"
           fi
 
       - name: Notify ArylHive (Success)
         if: success()
         run: |
           CALLBACK="${{ steps.ids.outputs.callback_url }}"
+          if [ -z "$CALLBACK" ]; then
+            echo "No callback URL (push-triggered). Skipping notification."
+            exit 0
+          fi
           if echo "$CALLBACK" | grep -q '?'; then
             FULL_URL="$CALLBACK&deployId=${{ steps.ids.outputs.build_id }}"
           else
@@ -109,12 +119,16 @@ jobs:
           curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X POST "$FULL_URL" \
                -H "Content-Type: application/json" \
                -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}" \
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_tge62iqdx9uy", "status": "success", "r2Path": "labs/prj_tge62iqdx9uy/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
+               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_2lms294kcfkj", "status": "success", "r2Path": "labs/prj_2lms294kcfkj/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
 
       - name: Notify ArylHive (Failure)
         if: failure()
         run: |
           CALLBACK="${{ steps.ids.outputs.callback_url }}"
+          if [ -z "$CALLBACK" ]; then
+            echo "No callback URL (push-triggered). Skipping failure notification."
+            exit 0
+          fi
           if echo "$CALLBACK" | grep -q '?'; then
             FULL_URL="$CALLBACK&deployId=${{ steps.ids.outputs.build_id }}"
           else
@@ -123,4 +137,4 @@ jobs:
           curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X POST "$FULL_URL" \
                -H "Content-Type: application/json" \
                -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}" \
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_tge62iqdx9uy", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
+               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_2lms294kcfkj", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
