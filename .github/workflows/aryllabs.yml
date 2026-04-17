@@ -1,140 +1,138 @@
-name: ArylHive Build
-on:
-  push:
-    branches: ['**']
-  workflow_dispatch:
-    inputs:
-      build_id:
-        required: true
-        type: string
-      upload_url:
-        required: true
-        type: string
-      callback_url:
-        required: true
-        type: string
+name: ArylLabs
 
-env:
-  CI: "false"
-  NEXT_TELEMETRY_DISABLED: "1"
-  ARYL_PREVIEW_ID: "prj_a27uvbyuvr0g"
-  ARYL_ARTIFACT_PREFIX: "labs/prj_a27uvbyuvr0g/builds"
-  ARYL_BUILD_CMD: "npm run build"
-  ARYL_OUTPUT_DIR: "dist"
+on:
+  repository_dispatch:
+    types: [aryllabs-build]
 
 jobs:
-  build:
-    name: Build and Upload Artifact
+  deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BUILD_ID: ${{ github.event.client_payload.build_id }}
+      UPLOAD_URL: ${{ github.event.client_payload.upload_url }}
+      CALLBACK_URL: ${{ github.event.client_payload.callback_url }}
+      PREVIEW_ID: ${{ github.event.client_payload.preview_id }}
+      BUILD_CMD: ${{ github.event.client_payload.build_cmd }}
+      OUTPUT_DIR: ${{ github.event.client_payload.output_dir }}
+      ENV_VARS_JSON: ${{ github.event.client_payload.env_vars }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect package manager
+        id: detect-pm
+        run: |
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+            echo "install=pnpm install --frozen-lockfile --prefer-offline" >> $GITHUB_OUTPUT
+          elif [ -f "yarn.lock" ]; then
+            echo "manager=yarn" >> $GITHUB_OUTPUT
+            echo "install=yarn install --frozen-lockfile" >> $GITHUB_OUTPUT
+          elif [ -f "package-lock.json" ]; then
+            echo "manager=npm" >> $GITHUB_OUTPUT
+            echo "install=npm install" >> $GITHUB_OUTPUT
+          elif [ -f "package.json" ]; then
+            echo "manager=npm" >> $GITHUB_OUTPUT
+            echo "install=npm install" >> $GITHUB_OUTPUT
+          else
+            echo "manager=none" >> $GITHUB_OUTPUT
+            echo "install=echo 'No package manager detected'" >> $GITHUB_OUTPUT
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Generate Build ID
-        id: ids
-        run: |
-          if [ -n "${{ inputs.build_id }}" ]; then
-            echo "build_id=${{ inputs.build_id }}" >> $GITHUB_OUTPUT
-            echo "upload_url=${{ inputs.upload_url }}" >> $GITHUB_OUTPUT
-            echo "callback_url=${{ inputs.callback_url }}" >> $GITHUB_OUTPUT
-          else
-            BUILD_ID="push_$(date +%s)_${{ github.sha }}"
-            echo "build_id=${BUILD_ID:0:20}" >> $GITHUB_OUTPUT
-            echo "upload_url=" >> $GITHUB_OUTPUT
-            echo "callback_url=https://api.aryllabs.com/api/labs/webhook" >> $GITHUB_OUTPUT
-          fi
+      - name: Setup pnpm
+        if: steps.detect-pm.outputs.manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
 
-      - name: Install Dependencies
+      - name: Inject environment variables
+        if: env.ENV_VARS_JSON != '' && env.ENV_VARS_JSON != '{}'
         run: |
-          if [ -f "pnpm-lock.yaml" ]; then
-            npm i -g pnpm && pnpm install --frozen-lockfile
-          elif [ -f "yarn.lock" ]; then
-            yarn install --frozen-lockfile
-          elif [ -f "package-lock.json" ]; then
-            npm ci || (echo "Lockfile out of sync, falling back to npm install..." && npm install)
-          elif [ -f "package.json" ]; then
-            npm install
-          fi
+          echo "$ENV_VARS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV 2>/dev/null || true
 
-      - name: Build Project
-        run: npm run build
-        env:
-          ARYL_NO_USER_ENV: "true"
-      - name: Package Artifact
+      - name: Install dependencies
+        if: steps.detect-pm.outputs.manager != 'none'
+        run: ${{ steps.detect-pm.outputs.install }}
+
+      - name: Build
         run: |
-          if [ -d "dist" ]; then
-            cd dist
-          elif [ -d "dist" ]; then
-            cd dist
-          elif [ -d "out" ]; then
-            cd out
-          elif [ -d "build" ]; then
-            cd build
-          elif [ -d ".next" ]; then
-            cd .next
-          else
-            echo "Error: Output directory not found!"
+          BUILD="${BUILD_CMD:-npm run build}"
+          echo "Running: $BUILD"
+          eval "$BUILD"
+
+      - name: Detect output directory
+        id: output
+        run: |
+          DIR="${OUTPUT_DIR:-dist}"
+          if [ ! -d "$DIR" ]; then
+            for d in dist out build .next/standalone public _site; do
+              if [ -d "$d" ]; then
+                DIR="$d"
+                echo "Fallback: using $d"
+                break
+              fi
+            done
+          fi
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+
+      - name: Verify output exists
+        run: |
+          DIR="${{ steps.output.outputs.dir }}"
+          if [ ! -d "$DIR" ]; then
+            echo "::error::Output directory '$DIR' not found after build."
+            if [ -n "$CALLBACK_URL" ]; then
+              curl -s -X POST "$CALLBACK_URL" \
+                -H "Content-Type: application/json" \
+                -d "{\"buildId\":\"$BUILD_ID\",\"previewId\":\"$PREVIEW_ID\",\"status\":\"failed\",\"error\":\"Output directory not found.\"}" || true
+            fi
             exit 1
           fi
-          zip -q -r ../build.zip .
+          echo "Output directory: $DIR ($(du -sh "$DIR" | cut -f1))"
+
+      - name: Create ZIP artifact
+        run: |
+          DIR="${{ steps.output.outputs.dir }}"
+          cd "$DIR"
+          zip -r -q "$GITHUB_WORKSPACE/build-output.zip" .
+          echo "ZIP size: $(du -sh "$GITHUB_WORKSPACE/build-output.zip" | cut -f1)"
 
       - name: Upload to ArylCloud
         run: |
-          UPLOAD_URL="${{ steps.ids.outputs.upload_url }}"
-          if [ -n "$UPLOAD_URL" ]; then
-            curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X PUT "$UPLOAD_URL" \
-                 --upload-file build.zip \
-                 -H "Content-Type: application/zip"
-          else
-            SECRET="${{ secrets.ARYL_BUILD_SECRET }}"
-            if [ -z "$SECRET" ]; then
-              echo "Push-triggered build: No ARYL_BUILD_SECRET configured. Skipping upload."
-              echo "To enable auto-deploy on push, add ARYL_BUILD_SECRET to your repository secrets."
-              exit 0
-            fi
-            echo "Push-triggered build: uploading via API"
-            curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X PUT "https://api.aryllabs.com/api/labs/upload-push-build?previewId=prj_a27uvbyuvr0g&buildId=${{ steps.ids.outputs.build_id }}" \
-                 --upload-file build.zip \
-                 -H "Content-Type: application/zip" \
-                 -H "Authorization: Bearer $SECRET"
+          if [ -z "$UPLOAD_URL" ]; then
+            echo "No upload URL provided, skipping."
+            exit 0
+          fi
+          echo "Uploading build artifact..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT "$UPLOAD_URL" \
+            -H "Content-Type: application/zip" \
+            --data-binary @build-output.zip \
+            --max-time 300)
+          echo "Upload response: $HTTP_CODE"
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Upload failed with HTTP $HTTP_CODE"
+            exit 1
           fi
 
-      - name: Notify ArylHive (Success)
+      - name: Notify ArylLabs (success)
         if: success()
         run: |
-          CALLBACK="${{ steps.ids.outputs.callback_url }}"
-          if [ -z "$CALLBACK" ]; then
-            echo "No callback URL (push-triggered). Skipping notification."
-            exit 0
-          fi
-          if echo "$CALLBACK" | grep -q '?'; then
-            FULL_URL="$CALLBACK&deployId=${{ steps.ids.outputs.build_id }}"
-          else
-            FULL_URL="$CALLBACK?deployId=${{ steps.ids.outputs.build_id }}"
-          fi
-          curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X POST "$FULL_URL" \
-               -H "Content-Type: application/json" \
-               -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}" \
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_a27uvbyuvr0g", "status": "success", "r2Path": "labs/prj_a27uvbyuvr0g/builds/${{ steps.ids.outputs.build_id }}.zip", "branch": "${{ github.ref_name }}"}'
+          if [ -z "$CALLBACK_URL" ]; then exit 0; fi
+          R2_PATH="labs/$PREVIEW_ID/builds/$BUILD_ID.zip"
+          BRANCH="${{ github.ref_name }}"
+          curl -s -X POST "$CALLBACK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"buildId\":\"$BUILD_ID\",\"previewId\":\"$PREVIEW_ID\",\"status\":\"success\",\"r2Path\":\"$R2_PATH\",\"branch\":\"$BRANCH\"}" || true
 
-      - name: Notify ArylHive (Failure)
+      - name: Notify ArylLabs (failure)
         if: failure()
         run: |
-          CALLBACK="${{ steps.ids.outputs.callback_url }}"
-          if [ -z "$CALLBACK" ]; then
-            echo "No callback URL (push-triggered). Skipping failure notification."
-            exit 0
-          fi
-          if echo "$CALLBACK" | grep -q '?'; then
-            FULL_URL="$CALLBACK&deployId=${{ steps.ids.outputs.build_id }}"
-          else
-            FULL_URL="$CALLBACK?deployId=${{ steps.ids.outputs.build_id }}"
-          fi
-          curl --retry 3 --retry-delay 5 --retry-all-errors --fail-with-body -X POST "$FULL_URL" \
-               -H "Content-Type: application/json" \
-               -H "Authorization: Bearer ${{ secrets.ARYL_BUILD_SECRET }}" \
-               -d '{"buildId": "${{ steps.ids.outputs.build_id }}", "previewId": "prj_a27uvbyuvr0g", "status": "failed", "error": "GitHub Actions Build Failed", "branch": "${{ github.ref_name }}"}'
+          if [ -z "$CALLBACK_URL" ]; then exit 0; fi
+          curl -s -X POST "$CALLBACK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"buildId\":\"$BUILD_ID\",\"previewId\":\"$PREVIEW_ID\",\"status\":\"failed\",\"error\":\"Build failed. Check GitHub Actions logs.\"}" || true
